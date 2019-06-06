@@ -1,0 +1,1250 @@
+﻿
+<link rel="stylesheet" href="css/bootstrap.min.css">
+<link rel="stylesheet" href="css/font-awesome.min.css">
+<link rel="shortcut icon" href="img/fav.ico">
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <title>XvX</title>
+</head>
+
+
+<body style="" onload="GetNewLandCache()">
+    <!--display: flex;justify-content: center; flex-direction:column;align-items:center ;-->
+    <style>
+        * {
+            padding: 0;
+            margin: 0;
+        }
+
+        select:focus {
+            outline: none;
+        }
+
+        .SignIn_row {
+        }
+
+        #top {
+            width: 100%;
+            height: 40px;
+            background-color: #cacaca;
+        }
+
+        #center {
+            width: 100%;
+            height: calc(100% - 43px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .top_nav {
+            display: flex;
+            align-items: center;
+            height: 100%;
+        }
+
+        .nopdlr {
+            padding-left: 0px;
+            padding-right: 0px;
+        }
+
+        #myCarousel {
+            width: 100%;
+            height: 100%;
+        }
+
+        .carousel-indicators li {
+            width: 1.5em;
+            height: 1.5em;
+        }
+
+        .div_cp1 {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .lastNext {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 30px;
+        }
+
+        .caption {
+            text-align: center;
+            font-size: 20px;
+            padding-top: 3em;
+            padding-bottom: 2em;
+        }
+
+        .indexLand {
+            height: 10em;
+            margin-bottom: 2em;
+            cursor: pointer;
+        }
+
+            .indexLand:hover {
+                background-color: #d0d0d0;
+            }
+
+            .indexLand img {
+                width: 17%;
+                height: calc(10em - 4px);
+                margin: 2px;
+            }
+
+                .indexLand img:hover {
+                    width: calc(17% + 4px);
+                    height: 10em;
+                    margin: 0px;
+                }
+
+        .Land_right {
+            float: right;
+            width: calc(83% - 4px);
+            height: 100%;
+            margin: 0px;
+            padding-top: 2px;
+            padding-bottom: 2px;
+            background-color: rgba(235, 213, 213, 0.37);
+            border-radius: 6px;
+        }
+
+        .land_message {
+            box-sizing: border-box;
+            word-wrap: break-word;
+            word-break: break-all;
+            overflow: hidden;
+            width: 100%;
+            height: calc(100% - 2em - 5px);
+            padding-left: 6px;
+            padding-right: 6px;
+            color: #64a8b7;
+            text-overflow: ellipsis;
+        }
+
+        .land_title {
+            height: 1.5em;
+            font-size: 18px;
+            margin-bottom: 5px;
+            padding-left: 6px;
+        }
+
+        .form-control {
+            height: 2.5em;
+        }
+    </style>
+    <script>
+        //var Oscript = document.createElement("script");
+        //Oscript.src = "http://api.map.baidu.com/api?v=3.0&ak=aN6LrzGL05HNX8f9WBkXt8mU9AGbK51W&callback=initialize";
+        //document.body.appendChild(Oscript);
+        function CurentTime() {
+            var now = new Date();
+
+            var year = now.getFullYear();       
+            var month = now.getMonth() + 1;     
+            var day = now.getDate();           
+
+            var hh = now.getHours();            
+            var mm = now.getMinutes();          
+
+            var clock = year + "-";
+
+            if (month < 10)
+                clock += "0";
+
+            clock += month + "-";
+
+            if (day < 10)
+                clock += "0";
+
+            clock += day + " ";
+
+            if (hh < 10)
+                clock += "0";
+
+            clock += hh + ":";
+            if (mm < 10) clock += '0';
+            clock += mm;
+            return (clock);
+        }
+
+
+        window.NowLand = { LandId: "", routeId: "", pointId: "", Point: "起始点", route: "路线", Land: "景点", Time: "7", nowtScore: 0, nowtime: new Date() };
+        window.LandCache = null;
+        window.CurrentWeather = null;
+        window.map1 = null;
+        window.map2 = null;
+        window.map3 = null;
+        window.CurrentLand = null;
+        window.myCarouselNumber = 0;
+
+        function click_user() {
+            var cookie = getCookie("token");
+            if (cookie == "" || cookie == null) {
+                ShowLoad();
+            }
+            else {
+ 
+                myCarouselNumber = 4;
+                $('#myCarousel').carousel(4);
+                setTimeout(function () { $("#myCarousel").carousel('pause'); }, 500);
+
+                $.ajax({
+                    type: "get",
+                    url: getCookie("api") + "getUserFavorate?userId=" + getmyunit().userId,
+                    contentType: "application/json",
+                    dataType: "json",
+                    success: function (dataaaaa) {
+
+
+                        document.getElementById("C5_LandCached").innerHTML = "";
+
+                        for (var i in dataaaaa) {
+						$.ajax({
+                                type: "get",
+                                url: getCookie("api") + "land/getSingleLand?landId=" + dataaaaa[i].landId,
+                                contentType: "application/json",
+                                dataType: "json",
+                                success: function (data_2) {
+                                    var C5_Land = data_2.landscape.landName;
+									
+									var data1="";
+									for(var j in dataaaaa){
+										if(dataaaaa[j].landId==data_2.landscape.landId)
+										{
+										data1=dataaaaa[j];
+										}
+									} 
+									var C5_City = data1.location;
+									var C5_time = data1.costTime;
+									var C5_route = data1.routeId;
+									
+									
+									
+                                    document.getElementById("C5_LandCached").innerHTML += '<div id="' + data1.faId + '" class="container" ><div class="indexLand" ><img src="img/asset/slider.jpg" /><div class="Land_right"><div class="row land_title"><div class="col-md-11" onclick="LandCachedClick(\'' + data1.faId + '\')">' + C5_Land + '</div> <div class="col-md-1" onclick="LandCachedDel(\'' + data1.faId + '\')" title="delete" >×</div> </div><div class="land_message">Collection details: starting point [' + C5_City + ']  Tourism mode:[' + C5_time + ']  route[' + C5_route + ']</div></div></div></div ></div >'
+                                },
+                                error: function (msg) {
+                                    console.log(msg)
+                                }
+                            })
+                        }
+						
+                    },
+                    error: function (msg) {
+                        console.log(msg)
+                    }
+                })
+            }
+        }
+
+        function LandCachedDel(obj) {
+            $.ajax({
+                type: "post",
+                url: getCookie("api") + "removeFavorate?faId=" + obj,
+                contentType: "application/json",
+                dataType: "json",
+                success: function (data) {
+                    if (data == "1") {
+                        document.getElementById(obj).parentNode.removeChild(document.getElementById(obj));
+                    }
+                },
+                error: function (msg) {
+                    console.log(msg)
+                }
+            })
+
+        }
+
+        function C1_btnClick() {
+            NowLand.City = $("#C1_City").text();
+            NowLand.Point = NowLand.pointId = $("#C1_point").val();
+            NowLand.Land = $("#C1_Land").val();
+            NowLand.Time = $("#C1_time").val();
+
+            setLocation(document.getElementById("C1_Land").options[document.getElementById("C1_Land").selectedIndex].text);
+
+            for (var i in LandCache) {
+                if (LandCache[i].landscape.landId == NowLand.Land) {
+                    NowLand.Land = document.getElementById("C1_Land").options[document.getElementById("C1_Land").selectedIndex].text;
+                    CurrentLand = LandCache[i];
+                    NowLand.LandId = CurrentLand.landscape.landId;
+                    $("#C2_custFlow").html(CurrentLand.landscape.custFlow);
+                    $("#C2_landName").html(CurrentLand.landscape.landName); C2_custFlow
+                    $("#C2_details").html(CurrentLand.landscape.details);
+                    $("#C2_collectStars").html(CurrentLand.landscape.collectStars);
+
+                    $("#C3_start").html(NowLand.Point);
+                    $("#C3_end").html(CurrentLand.landscape.landName);
+
+                    $("#C4_custFlow").html(CurrentLand.landscape.custFlow);
+                    $("#C4_landName").html(CurrentLand.landscape.landName);
+                    $("#C4_time").html(NowLand.Time );
+                    $("#C4_details").html(CurrentLand.landscape.details);
+
+                    Create_land(CurrentLand.commentList);
+                }
+            }
+
+
+
+
+            setScore();
+            GetNowTMP();
+            carouselclick("next");
+        }
+
+        function setScore() {
+            if (CurrentLand.commentList.length != 0) {
+                var nowtScore = 0;
+                var nowlandxxx = CurrentLand.commentList;
+                for (var index1 in nowlandxxx) {
+                    var now_number = nowlandxxx[index1].inputScore;
+                    NowLand.nowtScore += now_number * 1;
+                    console.log(now_number + "    " + NowLand.nowtScore);
+                }
+                NowLand.nowtScore = NowLand.nowtScore / nowlandxxx.length
+
+                var nowtScoretxt = "";
+                for (var i = 0; i < NowLand.nowtScore; i++) {
+                    nowtScoretxt += "★";
+                }
+                NowLand.nowtScore = 0;
+                document.getElementById("C2_Score").innerHTML = " ";
+                document.getElementById("C3_Score").innerHTML = " ";
+                document.getElementById("C2_Score").innerHTML = nowtScoretxt;
+                document.getElementById("C3_Score").innerHTML = nowtScoretxt;
+            }
+        }
+
+        function GetNowTMP(obj) {
+
+            $.ajax({
+                type: "get",
+                url: getCookie("api") + "getWeather?city=" + (obj == null ? NowLand.Land : obj),
+                contentType: "application/json",
+                dataType: "json",
+                success: function (data) {
+                    try {
+                        var tmp = data.result.HeWeather5[0].now.cond.txt + " " + data.result.HeWeather5[0].now.tmp + "℃";
+                        NowLand.nowtime = data.result.HeWeather5[0].basic.update.loc;
+                        document.getElementById("C2_weather").innerHTML = tmp;
+                        document.getElementById("C4_weather").innerHTML = tmp;
+                        CurrentWeather = data.result.HeWeather5[0];
+                    } catch (e) {
+                        console.log("设置城市天气为 上海")
+                        GetNowTMP("上海");
+                    }
+                },
+                error: function (msg) {
+                    console.log(msg)
+                }
+            })
+        }
+
+        function GetNewLandCache() {
+
+            loadApimap();
+   
+            settime();
+         
+            loadcity();
+         
+            $.ajax({
+                type: "get",
+                url: getCookie("api") + "land/getLandList",
+                contentType: "application/json",
+                dataType: "json",
+                success: function (data) {
+                    LandCache = data;
+                    document.getElementById("C1_Land").innerHTML = "";
+                    for (var i in LandCache) {
+                        document.getElementById("C1_Land").innerHTML += "<option value='" + LandCache[i].landscape.landId + "'>" + LandCache[i].landscape.landName + "</option>"
+                    }
+                },
+                error: function (msg) {
+                    console.log(msg)
+                }
+            })
+
+
+        }
+        function calculate(lower, upper) {
+            return Math.floor(Math.calculate() * (upper - lower)) + lower;
+        }
+        function Getestimatedtraffic(UseTime) {
+            var timefactor = 1.2;
+            var Climaticfactors = 1.2;
+            var Temperaturefactor = 1.2;
+            var lost$ = calculate(85, 90) / 100;
+            var eftime = new Date(NowLand.nowtime);
+            eftime.setHours(eftime.getHours() + UseTime);
+            console.log("eftime:" + eftime);
+            if (CurrentWeather == null)
+                return;
+            if (eftime > 12)
+                timefactor = lost$;
+            if (CurrentWeather.now.cond.txt != "晴")
+                Climaticfactors = lost$;
+            if (CurrentWeather.now.tmp > 30)
+                Temperaturefactor = lost$;
+            var custFlow_number = parseInt(CurrentLand.landscape.custFlow * timefactor * Climaticfactors * Temperaturefactor);
+            
+            
+            var ly_type = "Alone";
+            //if (CurrentLand.landscape.custFlow > custFlow_number) 
+            //    ly_type = "Alone";
+            //else if (custFlow_number / CurrentLand.landscape.custFlow > 1)
+            //    ly_type = "Party";
+            //else if (custFlow_number / CurrentLand.landscape.custFlow > 1.2)
+            //    ly_type = "Family";
+            //else if (custFlow_number / CurrentLand.landscape.custFlow > 1.1)
+            //    ly_type = "Lovers";
+
+            //var modScore = 1;
+            //if (ly_type == NowLand.Time) {
+            //    modScore = 5;
+            //}
+            //else
+            //{
+
+
+            if (custFlow_number < 1600)
+            {
+                ly_type = "Alone";
+            }
+            else if (custFlow_number < 1800)
+            {
+                ly_type = "Lovers";
+            }
+            else if (custFlow_number < 1900)
+            {
+                 ly_type = "Family";
+            }
+            else if (custFlow_number < 2000)
+            {
+                ly_type = "Party";
+            }
+            if (ly_type == NowLand.Time) {
+                modScore = 5;
+            }
+            else
+            {
+                modScore=random(1, 4);
+            }
+
+            var nowtScoretxt = "";
+                for (var i = 0; i < modScore; i++) {
+                    nowtScoretxt += "★";
+            }
+            document.getElementById("C2_modeScore").innerHTML = "";
+            document.getElementById("C2_modeScore").innerHTML = nowtScoretxt;
+
+            return custFlow_number;
+        }
+        //加载地图api
+        function loadApimap() {
+
+
+            //map driving walk riding transit
+
+            map1 = new BMap.Map('map1', { mapType: BMAP_HYBRID_MAP });
+            map1.enableScrollWheelZoom();
+            map1.centerAndZoom("上海", 16);
+            map1.setMinZoom(12);
+
+            map2 = new BMap.Map('map2', { mapType: BMAP_HYBRID_MAP });
+            map2.enableScrollWheelZoom();
+            map2.setMinZoom(12);
+            map2.centerAndZoom("上海",16);
+            
+            map3 = new BMap.Map('map3', { mapType: BMAP_HYBRID_MAP });
+            map3.enableScrollWheelZoom();
+            map3.setMinZoom(12);
+            map3.centerAndZoom("上海", 16);
+            map1driving1 = new BMap.DrivingRoute(map1, {
+                renderOptions: {
+                    map: map1,
+                    autoViewport: true
+                }
+            });
+            map1walk1 = new BMap.WalkingRoute(map1, {
+                renderOptions: {
+                    map: map1,
+                    autoViewport: true
+                }
+            });
+            //map1riding1 = new BMap.RidingRoute(map1, {
+            //    renderOptions: {
+            //        map: map1,
+            //        autoViewport: true
+            //    }
+            //});
+            map1transit1 = new BMap.TransitRoute(map1, {
+                renderOptions: {
+                    map: map1,
+                    autoViewport: true
+                }
+            });
+            map2driving1 = new BMap.DrivingRoute(map2, {
+                renderOptions: {
+                    map: map2,
+                    panel: "r-result2",
+                }
+            });
+            map2walk1 = new BMap.WalkingRoute(map2, {
+                renderOptions: {
+                    map: map2,
+                    panel: "r-result2",
+                }
+            });
+            //map2riding1 = new BMap.RidingRoute(map2, {
+            //    renderOptions: {
+            //        map: map2,
+            //        panel: "r-result2",
+            //    }
+            //});
+            map2transit1 = new BMap.TransitRoute(map2, {
+                renderOptions: {
+                    map: map2,
+                    panel: "r-result2",
+                }
+            });
+
+            var searchComplete = function (results) {
+                if (results == null)
+                    return;
+                try {
+
+                    var UseTime = results.getPlan(0).getDuration(false) / 3600;
+                    console.log(UseTime);
+                    document.getElementById("C2_EstimatedTraffic").innerHTML = Getestimatedtraffic(UseTime);
+
+
+                } catch (e) {
+                    console.log("计算预估客流量失败:" + e.message)
+                }
+
+            }
+
+            map3driving1 = new BMap.DrivingRoute(map3, {
+                renderOptions: {
+                    map: map3,
+                    panel: "r-result",
+                },
+                onSearchComplete: searchComplete
+            });
+            map3walk1 = new BMap.WalkingRoute(map3, {
+                renderOptions: {
+                    map: map3,
+                    panel: "r-result",
+                },
+                onSearchComplete: searchComplete
+            });
+            //map3riding1 = new BMap.RidingRoute(map3, {
+            //    renderOptions: {
+            //        map: map3,
+            //        panel: "r-result",
+            //    },
+            //    onSearchComplete: searchComplete
+            //});
+            map3transit1 = new BMap.TransitRoute(map3, {
+                renderOptions: {
+                    map: map3,
+                    panel: "r-result",
+                },
+                onSearchComplete: searchComplete
+            });
+        }
+        function setLocation(location) {
+            console.log("重定向:" + location);
+            map1.centerAndZoom(location, 16);
+            map2.centerAndZoom(location, 16); 
+            map3.centerAndZoom(location, 16); 
+        }
+        function loadcity() {
+        }
+        //function citychange() {
+
+
+        //    $.ajax({
+        //        type: "get",
+        //        url: getCookie("api") + "land/getLocationList?cityCode=" + $("#C1_City").val(),
+        //        contentType: "application/json",
+        //        dataType: "json",
+        //        success: function (data) {
+        //            document.getElementById("C1_point").innerHTML = "";
+        //            if (data.length > 0)
+        //                $.each(data, function (infoIndex, info) {
+        //                    document.getElementById("C1_point").innerHTML += "<option value='" + info["locationId"] + "'>" + info["location"] + "</option>";
+
+        //                })
+        //        },
+        //        error: function (msg) {
+        //            console.log(msg)
+        //        }
+        //    });
+
+
+        //}
+        function settime() {
+            var ntime = CurentTime();
+            document.getElementById("C2_landtime").innerHTML = ntime;
+            document.getElementById("C4_landtime").innerHTML = ntime;
+            setTimeout(settime, 1000);
+        }
+
+        function carouselclick(obj) {
+            if (obj == "prev") {
+                window.myCarouselNumber--;
+            }
+            if (obj == "next") {
+                window.myCarouselNumber++;
+            }
+            if (myCarouselNumber == 2 || myCarouselNumber == 3) {
+                if (myCarouselNumber == 2) {
+
+                    loadroutes();
+                }
+                document.getElementById("Next").style.display = "none";
+            }
+            else {
+                document.getElementById("Next").style.display = "";
+            }
+
+            if (myCarouselNumber == 0 && obj == "prev" || myCarouselNumber == 4) {
+                document.getElementById("Carcontrol").style.display = "none"
+ 
+            } else {
+                document.getElementById("Carcontrol").style.display = ""
+            }
+
+            $('#myCarousel').carousel(obj);
+            setTimeout(function () { $("#myCarousel").carousel('pause'); }, 500);
+        }
+
+        function loadroutes() {
+            ChangeOfTransportation('Driving');
+            document.getElementById("C2_CurrentTraffic").innerHTML = CurrentLand.landscape.custFlow;
+            document.getElementById("C2_EstimatedTraffic").innerHTML = CurrentLand.landscape.custFlow * 0.9;
+
+            //$.ajax({
+            //    type: "get",
+            //    url: getCookie("api") + "land/getRouteListByLandId?landId=" + NowLand.LandId,
+            //    contentType: "application/json",
+            //    dataType: "json",
+            //    success: function (data) {
+            //        if (data.length > 0)
+            //            Create_land(data, "C3_routecache")
+            //    },
+            //    error: function (msg) {
+            //        console.log(msg)
+            //    }
+            //});
+        }
+
+        function LandClick(obj) {
+            //NowLand.routeId = obj;
+            //NowLand.route = document.getElementById(obj).getElementsByClassName('col-md-6')[0].innerHTML;
+            $("#C4_start").html(NowLand.Point);
+            $("#C4_route").html(NowLand.route);
+            $("#C4_end").html(CurrentLand.landscape.landName);
+            carouselclick("next");
+        }
+
+        function LandCachedClick(obj) {
+
+            //
+            carouselclick("prev");
+            document.getElementById("Carcontrol").style.display = "none";
+            document.getElementById("C4submitbtn").innerHTML = "Back to favorites";
+
+            $.ajax({
+                type: "get",
+                url: getCookie("api") + "/getFavorate?faId=" + obj,
+                contentType: "application/json",
+                dataType: "json",
+                success: function (data1) {
+
+
+                    $("#C4_time").html(data1.costTime);
+                    $.ajax({
+                        type: "get",
+                        url: getCookie("api") + "land/getLocation?locationId=" + data1.location,//
+                        contentType: "application/json",
+                        dataType: "json",
+                        success: function (data_1) {
+                            C5_point = data1.location;
+                            C5_route = data1.routeId;
+                            GetNowTMP(C5_point);
+
+                            $("#C4_start").html(C5_point);
+
+
+                       
+                            $.ajax({
+                                type: "get",
+                                url: getCookie("api") + "land/getSingleLand?landId=" + data1.landId,
+                                contentType: "application/json",
+                                dataType: "json",
+                                success: function (data_2) {
+                                    CurrentLand = data_2;
+                                    setScore();
+                                    C5_Land = data_2.landscape.landName;
+                                    $("#C4_end").html(C5_Land);
+
+                                    setLocation(C5_Land);
+
+                                    switch (C5_route) {
+                                        case "Driving":
+                                            map2driving1.search(C5_point, C5_Land);
+                                            break;
+                                        case "Walk":
+                                            map2walk1.search(C5_point, C5_Land);
+                                            break;
+                                        case "Riding":
+                                            map2riding1.search(C5_point, C5_Land);
+                                            break;
+                                        case "Transit":
+                                            map2transit1.search(C5_point, C5_Land);
+                                            break;
+                                        default:
+                                    }
+
+                                    $("#C4_custFlow").html(data_2.landscape.custFlow);
+                                    $("#C4_landName").html(data_2.landscape.landName);
+                                    $("#C4_details").html(data_2.landscape.details);
+                                    $("#C4_route").html(C5_route);
+
+                                },
+                                error: function (msg) {
+                                    console.log(msg)
+                                }
+                            })
+
+
+                        },
+                        error: function (msg) {
+                            console.log(msg)
+                        }
+                    });
+
+                }
+            })
+
+
+        }
+        //
+        function Create_land(items, id = 'Comment_cacheds') {
+            document.getElementById(id).innerHTML = "";
+            if (id == "Comment_cacheds") {
+                for (var i in items) {
+                    current = items[i]
+                    document.getElementById(id).innerHTML += '<div class="container" id="' + current.commentId + '"><div class="indexLand"><img src="img/f4.jpg" /><div class="Land_right"><div class="row land_title"><div class="col-md-8">' + current.author + '</div><div class="col-md-4">' + current.inputDate + '</div></div><div class="land_message">' + current.details + '</div></div></div></div>'
+                }
+                return;
+            }
+            else {
+           
+                for (var i in items) {
+                    current = items[i]
+                    if (items.landid != null) {
+                        current = items;
+                        document.getElementById(id).innerHTML += '<div id="' + current.routeid + '"  class="container"><div class="indexLand"><img src="img/f99.jpg" /><div class="Land_right"><div class="row land_title"><div class="col-md-6">' + current.type + '</div><div class="col-md-3">' + current.costtime + 'hour</div><div class="col-md-3"> ' + current.distance + 'KM</div></div><div class="land_message">' + current.routelist + '</div></div></div></div>'
+                        return;
+                    }
+                    document.getElementById(id).innerHTML += '<div id="' + current.routeid + '"  class="container" onclick="LandClick(this.id)"><div class="indexLand"><img src="img/f99.jpg" /><div class="Land_right"><div class="row land_title"><div class="col-md-6">' + current.type + '</div><div class="col-md-3">' + current.costtime + 'hour</div><div class="col-md-3"> ' + current.distance + 'KM</div></div><div class="land_message">' + current.routelist + '</div></div></div></div>'
+                }
+            }
+
+        }
+
+        function C4_submit() {
+
+          
+            if (document.getElementById("Carcontrol").style.display == "none") {
+                carouselclick("next");
+            }
+            else {
+                xxxxFavorate =
+                    {
+                        userId: getmyunit().userId,
+                        location: NowLand.pointId,
+                        landId: NowLand.LandId,
+                        routeId: NowLand.route,
+                        costTime: NowLand.Time,
+                    }
+                $.ajax({
+                    type: "Post",
+                    url: getCookie("api") + "saveNewFavorate",
+                    contentType: "application/json",
+                    dataType: "json",
+                    data: JSON.stringify(xxxxFavorate),
+                    success: function (data) {
+                        console.log(data);
+                        document.getElementById("Carcontrol").style.display = "none";
+                        click_user();
+                    },
+                    error: function (msg) {
+                        console.log(msg)
+                    }
+                })
+            }
+    }
+
+        function ChangeOfTransportation(obj) {
+            
+            map1.clearOverlays();
+            map2.clearOverlays();
+            map1.clearOverlays();
+            console.log("查看路线:" + obj);
+            switch (obj) {
+                case "Driving":
+                    NowLand.route = "Driving";
+                    $("#C2_Driving").parent().addClass("active");
+                    $("#C2_Driving").parent().siblings().removeClass("active");
+                    map1driving1.search(NowLand.Point, NowLand.Land);
+                    map2driving1.search(NowLand.Point, NowLand.Land);
+                    map3driving1.search(NowLand.Point, NowLand.Land);
+                    break;
+                case "Walk":
+                    NowLand.route = "Walk";
+                    $("#C2_Walk").parent().addClass("active");
+                    $("#C2_Walk").parent().siblings().removeClass("active");
+                    map1walk1.search(NowLand.Point, NowLand.Land);
+                    map2walk1.search(NowLand.Point, NowLand.Land);
+                    map3walk1.search(NowLand.Point, NowLand.Land);
+                    break;
+                case "Riding":
+                    NowLand.route = "Riding";
+                    $("#C2_Riding").parent().addClass("active");
+                    $("#C2_Riding").parent().siblings().removeClass("active");
+                    map1riding1.search(NowLand.Point, NowLand.Land);
+                    map2riding1.search(NowLand.Point, NowLand.Land);
+                    map3riding1.search(NowLand.Point, NowLand.Land);
+                    break;
+                case "Transit":
+                    NowLand.route = "Transit";
+                    $("#C2_Transit").parent().addClass("active");
+                    $("#C2_Transit").parent().siblings().removeClass("active");
+                    map1transit1.search(NowLand.Point, NowLand.Land);
+                    map2transit1.search(NowLand.Point, NowLand.Land);
+                    map3transit1.search(NowLand.Point, NowLand.Land);
+                    break;
+                default: ;
+            }
+        }
+
+
+    </script>
+    <div id="top" style="position:fixed;z-index:1000;">
+
+        <div class="row " style="margin-right: 0px;margin-left: 0px;">
+            <div class="col-md-10 " style="padding-right: 0px;"><a href="index.html" style="font-size:30px">Home</a></div>
+            <div class="col-md-2 top_nav nopdlr" style="padding-right: 0px;"><a href="javascript:click_user()" class="btn btn-link"><svg class='icon' style='width: 1.4em; height: 1.4em; vertical-align: middle; fill: currentColor; overflow: hidden; ' viewBox='0 0 1024 1024' version='1.1' xmlns='http://www.w3.org/2000/svg' p-id='1520'><path d='M963.304273 982.126574c0 22.754101-18.255436 41.204869-40.78098 41.204869-22.52655 0-40.781987-18.450768-40.781987-41.204869l-0.358443-3.846217c0-1.630112 0.292997-3.194777 0.456109-4.792669-25.460549-180.860821-178.936705-313.768775-365.828637-315.853989-1.499219 0.03222-2.933999 0.228558-4.433219 0.228558s-2.935006-0.195331-4.400999-0.228558c-184.740265 2.086221-336.750428 132.025942-364.785526 309.757432 0.913225 3.488781 1.596885 7.107447 1.596885 10.888219l0.39167 3.878437c0 23.112544-18.549441 41.858323-41.433427 41.858323-22.852774 0-41.433427-18.744772-41.433427-41.858323l-0.03222-0.390663-0.782333 0c0.097666-1.206222 0.358443-2.380225 0.488329-3.586447 0-3.455554 0.521555-6.714771 1.303888-9.942774C83.710605 801.52653 194.319561 666.695467 344.830505 608.635708c-87.627303-56.721638-144.77283-156.964937-144.77283-271.486563 0-177.112269 136.232617-320.712104 311.551663-320.712104 175.286826 0 311.518436 143.599835 311.518436 320.712104 0 114.488399-57.081088 214.699479-144.676172 271.421117 149.467833 57.60365 259.555234 190.869041 281.984118 355.920096 1.532446 4.335553 2.54233 8.931883 2.54233 13.788991L963.304273 982.126574 963.304273 982.126574 963.304273 982.126574zM751.506574 337.246811c0-133.916832-107.447405-242.472793-239.99591-242.472793-132.548504 0-239.99591 108.588181-239.99591 242.472793 0 133.918845 107.447405 242.4738 239.99591 242.4738C644.025942 579.720611 751.506574 471.165657 751.506574 337.246811L751.506574 337.246811 751.506574 337.246811z' p-id='1521'></path></svg><span id="html_name">please sign in</span></a></div>
+        </div>
+
+    </div>
+    <div id="top" style="z-index:1000;">
+
+    </div>
+    <div id="center">
+        <div id="myCarousel" class="carousel slide">
+            <!-- （Carousel） -->
+            <div class="carousel-inner">
+                <!--第一页-->
+                <div id="Lands" class="item active">
+
+
+                    <div style="background-image:url(img/header-bg.jpg);background-size:cover; width:100%;height:100%">
+                        <div style="background-color:rgba(0, 0, 0, 0.15); width:100%;height:100%">
+
+                            <div class="container">
+                                <div class="row fullscreen d-flex align-items-center" style="height: 1280px;">
+                                    <div class="banner-content d-flex align-items-center col-lg-12 col-md-12" style="font-size:60px; font-weight:bold; color:rgba(29, 182, 216, 0.84); margin-top:5%;">
+                                        Let travel enrich your <br>soul and body
+                                    </div>
+                                    <div class=" d-flex  col-md-12 text-center" style="color:#C0C0C0; margin-top:15%;">
+
+                                        <div class="div_cp1">
+                                            <div class="input-group">
+                                                <span class="input-group-addon">Starting</span>
+                                                <input class="form-control" id="C1_point" />
+                                            </div>
+                                            &nbsp;
+                                            <div class="input-group">
+                                                <span class="input-group-addon">Land</span>
+                                                <select class="form-control" id="C1_Land">
+                                                    <option value="NULL">Load📡...</option>
+                                                </select>
+                                            </div>
+                                            &nbsp;
+                                            <div class="input-group">
+                                                <span class="input-group-addon">TourismMode</span>
+                                                <select class="form-control" id="C1_time">
+                                                    <option value="Alone">Alone</option>
+                                                    <option value="Lovers">Lovers</option>
+                                                    <option value="Family">Family</option>
+                                                    <option value="Party">Party</option>
+                                                </select>
+                                            </div>
+                                            &nbsp;<button type="button" onclick="C1_btnClick()" class="btn btn-primary">Submit</button>
+                                        </div>
+
+                                    </div>
+
+
+
+
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+
+
+                </div>
+                <!--第二页-->
+                <div class="item">
+                    <div class="container">
+                        <div class="post-wrapper pt-100">
+                            <!-- Start post Area -->
+                            <section class="post-area">
+                                <div class="container">
+                                    <div class="row justify-content-center">
+                                        <div class="col-lg-8">
+                                            <div class="single-page-post">
+                                                <div id="map1" style="width:100%;height:35em" class="img-fluid">
+                                                </div>
+                                                <div class="top-wrapper ">
+                                                    <div class="row d-flex justify-content-between">
+                                                        <h2 id="C2_landName" class="col-lg-8 col-md-12 text-uppercase">
+                                                            ...
+                                                        </h2>
+                                                        <div class="col-lg-4 col-md-12 right-side d-flex justify-content-end">
+                                                            <h2 id="C2_landtime"></h2>
+
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="single-post-content">
+
+                                                    <blockquote id="C2_details">  XXX</blockquote>
+                                                </div>
+                                                <!-- Start comment-sec Area -->
+                                                <section class="comment-sec-area pt-80 pb-80">
+                                                    <div class="container">
+                                                        <div id="Comment_cacheds" class="row flex-column">
+                                                            <br>
+                                                            <h3 id="" class="text-uppercase pb-80">Comments</h3>
+                                                            <br><br>
+                                                            <div class="container">
+                                                                <div class="indexLand">
+                                                                    <img src="img/f4.jpg" />
+                                                                    <div class="Land_right">
+                                                                        <div class="row land_title">
+                                                                            <div class="col-md-9">XX</div>
+                                                                            <div class="col-md-3"></div>
+                                                                        </div>
+                                                                        <div class="land_message"></div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+
+                                                        </div>
+                                                    </div>
+                                                </section>
+
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-4 sidebar-area ">
+                                            <div class="input-group">
+                                                <span class="input-group-addon"><h4>Climate</h4></span>
+                                            </div>
+
+                                            <div id="C2_weather" style="font-size:30px; text-align:center; color:#76b722">Unable to read City Weather</div>
+                                            <div class="input-group">
+                                                <span class="input-group-addon"><h4>Passenger flow</h4></span>
+                                            </div>
+                                            <div id="C2_custFlow" style="font-size:30px; text-align:center; color:#64a8b7">9999+</div>
+                                            <div class="input-group">
+                                                <span class="input-group-addon"><h4>Score</h4></span>
+                                            </div>
+                                            <div id="C2_Score" style="font-size:30px; text-align:center; color:#ff9a0d">★ ★ ★ ★ ★</div>
+                                            <div class="input-group">
+                                                <span class="input-group-addon"><h4>Likes</h4></span>
+                                            </div>
+                                            <div id="C2_collectStars" style="font-size:30px; text-align:center; color:#dd756f">999+</div>
+
+
+
+
+                                            <div class="input-group">
+                                                <div class="input-group-addon">
+
+                                                    <button id="C2_likebtn" type="button" class="btn btn-primary btn-lg" onclick="landLike()">♥like</button>
+
+                                                    <button type="button" class="btn btn-primary btn-lg" onclick="landComment()">Comment</button>
+
+                                                </div>
+                                            </div>
+
+                                        </div>
+                                    </div>
+                                </div>
+                            </section>
+                            <!-- End post Area -->
+                        </div>
+
+
+
+                    </div>
+                </div>
+                <!--第三页-->
+                <div class="item">
+
+                    <div class="caption"><a id="C3_start">XX</a> → <a id="C3_end">XX</a> route</div>
+                    <div class="container">
+                        <div class="input-group">
+                            <span class="input-group-addon">Current traffic</span>
+                            <h4 id="C2_CurrentTraffic" style="margin-left:2em;">199</h4>
+                        </div>
+                        <div class="input-group">
+                            <span class="input-group-addon"> Estimated traffic</span>
+                            <h4 id="C2_EstimatedTraffic" style="margin-left:2em;">299</h4>
+                        </div>
+                        <div class="input-group">
+                            <span class="input-group-addon"> Fit degree</span>
+                            <span id="C2_modeScore" style="margin-left:1em; font-size:30px;color:#ff9a0d">★ </span>
+                        </div>
+                        <ul class="nav nav-pills nav-justified">
+                            <li class="active"><a id="C2_Driving" href="javascript:ChangeOfTransportation('Driving')">Driving</a></li>
+                            <li><a id="C2_Walk" href="javascript:ChangeOfTransportation('Walk')">Walk</a></li>
+                            <li><a id="C2_Transit" href="javascript:ChangeOfTransportation('Transit')">Transit</a></li>
+                        </ul>
+                        <div id="map3" style="width:100%;height:35em" class="img-fluid">
+                        </div>
+                        <button type="button" class="btn btn-primary btn-lg " style="margin-left:85%" onclick="LandClick()">Next</button>
+                        <div id="r-result">
+                        </div>
+                    </div>
+                </div>
+                <!--第四页-->
+                <div class="item">
+
+                    <div class="container">
+                        <div class="post-wrapper pt-100">
+                            <!-- Start post Area -->
+                            <section class="post-area">
+                                <div class="container">
+                                    <div class="row justify-content-center">
+                                        <div class="col-lg-8">
+                                            <div class="single-page-post">
+
+                                                <div id="map2" style="width:100%;height:35em" class="img-fluid">
+
+                                                </div>
+
+                                                <div class="top-wrapper ">
+                                                    <div class="row d-flex justify-content-between">
+                                                        <h2 id="C4_landName" class="col-lg-8 col-md-12 text-uppercase">
+                                                            xx
+                                                        </h2>
+                                                        <div class="col-lg-4 col-md-12 right-side d-flex justify-content-end">
+                                                            <h2 id="C4_landtime"></h2>
+
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="single-post-content">
+
+                                                    <blockquote id="C4_details">xx</blockquote>
+                                                </div>
+                                                <!-- Start comment-sec Area -->
+                                                <section class="comment-sec-area pt-80 pb-80">
+                                                    <div class="container">
+                                                        <div class="row flex-column">
+                                                            <h3 id="" class="text-uppercase pb-80">route</h3>
+                                                            <br>
+                                                            <div id="Route_cacheds">
+
+                                                                <div id="r-result2"></div>
+                                                            </div>
+
+                                                        </div>
+                                                    </div>
+                                                </section>
+
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-4 sidebar-area ">
+                                            <div class="input-group">
+                                                <span class="input-group-addon"><h4>Climate</h4></span>
+                                            </div>
+
+                                            <div id="C4_weather" style="font-size:30px; text-align:center; color:#76b722">Unable to read City Weather</div>
+                                            <div class="input-group">
+                                                <span class="input-group-addon"><h4>Passenger flow</h4></span>
+                                            </div>
+                                            <div id="C4_custFlow" style="font-size:30px; text-align:center; color:#64a8b7">400+</div>
+                                            <div class="input-group">
+                                                <span class="input-group-addon"><h4>Score</h4></span>
+                                            </div>
+                                            <div id="C3_Score" style="font-size:30px; text-align:center; color:#ff9a0d">★ ★ ★ ★ ★</div>
+
+
+
+                                            <div class="input-group">
+                                                <span class="input-group-addon"><h3>Travel plan</h3></span>
+                                            </div>
+                                            <div style="width:100%; height:8em;">
+                                                <div style=" font-size:15px; text-align:center; float:left; width:1em;height:100%;">
+                                                    <p id="C4_time" class="text-muted">hour</p>
+                                                </div>
+                                                <div style="padding-left:4em; font-size:20px; float:left; width:calc(100% - 4em);height:100%;">
+                                                    <div id="C4_start">XX</div>
+                                                    <div id="C4_route">XX</div>
+                                                    <div id="C4_end">XX</div>
+                                                </div>
+                                            </div>
+
+
+                                            <div class="input-group">
+                                                <div class="input-group-addon">
+
+                                                    <button id="C4submitbtn" type="button" onclick="C4_submit()" class="btn btn-primary btn-lg">Add to favorites</button>
+
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                </div>
+                            </section>
+                            <!-- End post Area -->
+                        </div>
+
+
+
+                    </div>
+
+                </div>
+
+                <!--第五页-->
+                <div class="item">
+
+
+                    <div class="caption"><a id="C3_end">My favorites</a> </div>
+                    <div id="C5_LandCached">
+
+                        <div class="container" style="text-align:center"><h2>Empty favorites!</h2></div>
+
+                    </div>
+
+
+
+                </div>
+            </div>
+            <!-- （Carousel） -->
+            <div id="Carcontrol" style="display:none;">
+                <a id="Prev" style="position:fixed;z-index:999;" class="left carousel-control lastNext" href="javascript:carouselclick('prev')" role="button" data-slide="prev">
+                    Prev
+                </a>
+                <a id="Next" style="position:fixed;z-index:999;" class="right carousel-control lastNext" href="javascript:carouselclick('next')" role="button" data-slide="next">
+                    Next
+                </a>
+
+            </div>
+        </div>
+        <div id="commentDiv" style="width:40em;height:15em;position:fixed;  background-color:rgba(136, 136, 136, 0.83);display:none;box-shadow: 10px 10px 5px #888888;">
+            <button type="button" onclick="CommentClose()" class="btn btn-primary" style="margin-left:37.5em;width:2.5em;">×</button>
+            <div style="width:30em;height:10em; margin-top:1em;margin-left:5em">
+                <div class="input-group">
+                    <span class="input-group-addon" style="width:56px">Score </span>
+                    <select class="form-control" id="commentScore" style="width:calc(25em - 108px)">
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+                        <option value="3">3</option>
+                        <option value="4">4</option>
+                        <option value="5">5</option>
+                    </select>
+                </div>
+                <br />
+                <div class="input-group">
+                    <span class="input-group-addon" style="width:56px">Reply</span>
+                    <input class="form-control" id="commentInput" style="width:calc(25em - 112px)" />
+                    <button type="button" onclick="landComment(true)" class="btn btn-primary" style="width:56px">Send</button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+    <script type="text/javascript" src="http://api.map.baidu.com/api?v=2.0&ak=aN6LrzGL05HNX8f9WBkXt8mU9AGbK51W"></script>
+    <script src="js/popper.min.js"></script>
+    <script src="js/vendor/jquery-3.2.1.min.js"></script>
+    <script src="js/vendor/bootstrap.min.js"></script>
+    <script src="js/init.js"></script>
+
+    <script src="js/crypto-js.js"></script>
+    <script src="js/sha1.js"></script>
+    <script>
+        $('#myCarousel').carousel('pause');
+        function CommentClose() {
+            document.getElementById("commentDiv").style.display = "none";
+            document.getElementById("commentInput").value = "";
+        }
+
+        function landLike() {
+            $.ajax({
+                type: "post",
+                url: getCookie("api") + "land/makeStar?landId=" + NowLand.LandId,
+                contentType: "application/json",
+                dataType: "json",
+                success: function (data) {
+
+                    document.getElementById("C2_collectStars").innerHTML = (document.getElementById("C2_collectStars").innerHTML * 1) + 1;
+                    document.getElementById("C2_likebtn").disabled = true
+                    document.getElementById("C2_likebtn").style.color = "rgba(255, 33, 144, 1)";
+                },
+                error: function (msg) {
+                    console.log(msg)
+                }
+            })
+        }
+
+        function landComment(obj) {
+            if (obj) {
+                $.ajax({
+                    type: "post",
+                    url: getCookie("api") + "land/addComment",
+                    contentType: "application/json",
+                    data: JSON.stringify({
+                        landId: NowLand.LandId,
+                        author: getmyunit().userId,
+                        inputScore: 4,
+                        details: document.getElementById("commentInput").value
+                    }),
+                    dataType: "json",
+                    success: function (data) {
+                        document.getElementById("Comment_cacheds").innerHTML += '<div class="container" ><div class="indexLand"><img src="img/f4.jpg" /><div class="Land_right"><div class="row land_title"><div class="col-md-8">' + getmyunit().userName + '</div><div class="col-md-4">' + new Date().toLocaleString() + '</div></div><div class="land_message">' + $("#commentInput").val() + '</div></div></div></div>';
+                        CommentClose();
+                    },
+                    error: function (msg) {
+                        console.log(msg)
+                    }
+                })
+            }
+            else {
+                document.getElementById("commentDiv").style.display = "";
+            }
+        }
+    </script>
+    <!--<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDJW4jsPlNKgv6jFm3B5Edp5ywgdqLWdmc"></script>-->
+                        
+</body>
+</html>
+
+
